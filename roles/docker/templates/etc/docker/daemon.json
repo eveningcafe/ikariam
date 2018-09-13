@@ -1,0 +1,5 @@
+{
+  "insecure-registries" : ["{{ docker_insecure_registry_server_ip }}:{{ docker_insecure_registry_server_port }}"]
+}
+
+

@@ -1,0 +1,78 @@
+---
+- name: Gather variables for each operating system
+  include_vars: "{{ item }}"
+  with_items: "{{ ansible_os_family | lower }}.yml"
+
+- name: install system dependencies
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ docker_dependencies }}"
+- name: add docker's gpg key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+- name: add stable repo
+  apt_repository:
+    repo: "{{item}}"
+    state: present
+    update_cache: no
+  register: add_docker_apt_repo
+  with_items:
+    - "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable"
+- name: update apt cache
+  apt:
+    update_cache: yes
+  when: add_docker_apt_repo is changed
+  register: update_docker_apt_cache
+  until: update_docker_apt_cache is success
+  retries: 2
+  delay: 2
+
+- name: install docker
+  package:
+    name: docker-ce
+    state: present
+    update_cache: yes   
+  register: installed_docker
+  notify: 
+    - enable docker
+- name: upgrade pip
+  pip:
+    name: pip
+    state: latest
+
+- name: install docker-py via pip
+  pip:
+    name: docker-py 
+    state: latest
+- name: setup docker proxy
+  when: installed_docker is success and docker_proxy
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+  register: created_docker_service
+
+- name: copy file docker http proxy
+  when: created_docker_service is success
+  template:
+    src: "etc/systemd/system/docker.service.d/http-proxy.conf"
+    dest: /etc/systemd/system/docker.service.d/
+  notify:
+    - restart docker
+- name: copy file docker https proxy
+  when: created_docker_service is success
+  template:  
+    src: "etc/systemd/system/docker.service.d/https-proxy.conf"
+    dest: /etc/systemd/system/docker.service.d/
+  notify:
+    - restart docker
+
+- name: setting local insecure registry server
+  when: created_docker_service is success and docker_use_local_registry
+  template:
+    src: "etc/docker/daemon.json"
+    dest: /etc/docker/
+  notify:
+    - restart docker
+

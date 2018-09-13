@@ -1,0 +1,5 @@
+---
+- hosts: ectd_keepalived
+  sudo: yes
+  roles:
+     - etcd-keepalived

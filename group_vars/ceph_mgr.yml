@@ -1,0 +1,6 @@
+#check mon up
+retries_mgr: 3
+delay_retries_mgr: 5
+dashboard_username: foo
+dashboard_password: bar
+parallel_create_mgr: false

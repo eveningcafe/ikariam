@@ -1,0 +1,63 @@
+  - name: clean docker mon
+    docker_container:
+      name: "{{mon_name}}"
+      state: absent
+    when: "'ceph_mon' in group_names"
+  - name: clean docker mgr
+    docker_container:
+      name: "{{mgr_name}}"
+      state: absent
+    when: "'ceph_osd' in group_names"
+  - name: clean docker osd
+    when: (
+          'ceph_osd' in group_names
+          and osd_nodes is defined
+          )
+    docker_container:
+      name: "{{item.name}}"
+      state: absent
+    loop: "{{ osd_nodes }}"
+  - name: Set docker_registry_address
+    set_fact:
+      image_address: "{{docker_insecure_registry_server_ip}}:{{docker_insecure_registry_server_port}}/{{ ceph_docker_image }}:{{ ceph_docker_image_tag }}"
+    when: docker_use_local_registry
+
+  - name: Set docker_registry_address
+    set_fact:
+      image_address: "{{ ceph_docker_image }}:{{ ceph_docker_image_tag }}"
+    when: not docker_use_local_registry
+    
+  - name: zap devices
+    when: ( 
+           'ceph_osd' in group_names
+           and device_prepare is defined
+          )
+    docker_container:
+      name: "ceph_zap_{{ item.name }}"
+      state: started
+      image: "{{ image_address }}"
+      volumes:
+        - /dev/:/dev/
+      env:
+        OSD_DEVICE: "{{ item.path }}"
+      privileged: yes
+      command: zap_device
+    loop: "{{ device_prepare }}"
+
+  - name: clean file
+    command: "rm -r /var/lib/ceph /var/run/ceph /etc/ceph"
+    ignore_errors: yes
+  - name: clean etcd 
+    command: "etcdctl rm /ceph-config -r"
+    run_once: true
+    ignore_errors: yes
+  - name: remove a list of ceph packages
+    apt:
+      name: "{{ packages }}"
+      state: absent
+    vars:
+      packages:
+      - ceph
+      - ceph-deploy
+      - ceph-common
+      - ceph-mds

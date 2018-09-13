@@ -1,0 +1,33 @@
+storage01 ansible_host=192.168.2.191 ansible_user=ans
+storage02 ansible_host=192.168.2.192 ansible_user=ans
+storage03 ansible_host=192.168.2.193 ansible_user=ans
+storage04 ansible_host=192.168.2.194 ansible_user=ans
+
+[cluster]
+storage01
+storage02
+storage03
+storage04
+
+[ectd_keepalived]
+storage01 
+storage02 
+storage03
+
+[ceph_mon]
+storage01
+storage02
+storage03
+
+[ceph_osd]
+storage01
+storage03
+storage02
+
+[ceph_mgr]
+storage01
+storage02
+storage03
+[ceph_conf]
+storage01
+

@@ -1,0 +1,30 @@
+- name: ensure file ceph.parameters exists 
+  local_action:
+    module: copy
+    content: ""
+    dest: "{{ ceph_parameters_file.path }}"
+    force: yes # rewrite if file exit
+    group: "{{ceph_parameters_file.group}}"
+    owner: "{{ceph_parameters_file.owner}}"
+    mode: "{{ceph_parameters_file.mode}}"
+
+- name: get client key
+  command: "docker exec {{mon_name}} ceph auth print-key client.{{item.name}}"
+  register: ceph_user_key
+  loop: "{{users}}"
+- name: write client key to ansible host
+  local_action:
+    module: lineinfile
+    path: "{{ ceph_parameters_file.path }}"
+    line: "\n# Ceph user: keyring \n {{item.item.name}}:{{ item.stdout }} \n"
+  loop: "{{ceph_user_key.results}}"
+- name: get list pool
+  command: docker exec {{mon_name}}  ceph osd pool ls
+  register: ceph_pool_list
+
+- name: save ceph pool list to ansible host
+  local_action:
+    module: lineinfile
+    path: "{{ ceph_parameters_file.path }}"
+    line: "\n# Ceph pool list \n{{ ceph_pool_list.stdout }} \n"
+ 

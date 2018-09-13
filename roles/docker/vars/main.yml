@@ -1,0 +1,13 @@
+---
+docker_compose: true
+
+docker_proxy: "{{ use_proxy }}"
+docker_http_proxy: "{{ http_proxy }}"
+docker_https_proxy: "{{ https_proxy }}"
+docker_no_proxy: "{{ no_proxy }}"
+
+docker_package: "docker-ce{{ (docker_version != 'latest') | ternary('=' ~ docker_version ~ '*', '') }}"
+docker_dependencies:
+  - apt-transport-https
+  - ca-certificates
+  - software-properties-common

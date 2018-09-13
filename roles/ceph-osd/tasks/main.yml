@@ -1,0 +1,82 @@
+---
+- name: use image_address from local registry
+  set_fact:
+    image_address: "{{docker_insecure_registry_server_ip}}:{{docker_insecure_registry_server_port}}/{{ ceph_docker_image }}:{{ ceph_docker_image_tag }}"
+  when: docker_use_local_registry
+
+- name: use image_address from extenal registry
+  set_fact:
+    image_address: "{{ ceph_docker_image }}:{{ ceph_docker_image_tag }}"
+  when: not docker_use_local_registry
+  
+- name: wipe_out_device_prepare_before_zap
+  command: " dd if=/dev/zero of={{ item.path }} bs=4096k "
+  when: wipe_out_disk_before_zap and device_prepare is defined
+  loop: "{{ device_prepare }}"
+  
+- name: zap devices
+  when: device_prepare is defined
+  docker_container:
+    name: "ceph_zap_{{ item.name }}"
+    state: started
+    image: "{{ image_address }}"
+    volumes:
+      - /dev/:/dev/
+    env:
+      OSD_DEVICE: "{{ item.path }}"
+    privileged: yes
+    command: zap_device
+  loop: "{{ device_prepare }}"
+
+- name: create OSD
+  when: (
+         osd_nodes is defined
+         and item.wal is not defined
+         and item.db is not defined
+        )
+  docker_container:
+    name: "{{ item.name }}"
+    state: started
+    image: "{{ image_address }}"
+    volumes:
+      - /dev/:/dev/
+    env:
+      OSD_DEVICE: "{{ item.primary_disk }}"
+      KV_TYPE: "{{ kv_type }}"
+      KV_IP: "{{ kv_endpoint }}"
+      OSD_TYPE: disk
+      OSD_BLUESTORE: 1
+    pid_mode: host
+    privileged: yes
+    network_mode: host
+    command: osd
+    restart_policy: unless-stopped
+  loop: "{{ osd_nodes }}"
+
+- name: create OSD sperate wal db
+  when: (
+         osd_nodes is defined
+         and item.wal_disk is defined
+         and item.db_disk is defined
+        )
+  docker_container:
+    name: "{{item.name}}"
+    state: started
+    image: "{{ image_address }}"
+    volumes:
+      - /dev/:/dev/
+    env:
+      OSD_DEVICE: "{{ item.primary_disk }}"
+      KV_TYPE: "{{ kv_type }}"
+      KV_IP: "{{ kv_endpoint }}"
+      KV_PORT: "{{kv_port}}"
+      OSD_TYPE: disk
+      OSD_BLUESTORE_BLOCK_WAL: "{{ item.wal_disk }}"
+      OSD_BLUESTORE_BLOCK_DB: "{{ item.db_disk }}"
+      OSD_BLUESTORE: 1
+    pid_mode: host
+    privileged: yes   
+    network_mode: host
+    command: osd   
+    restart_policy: unless-stopped
+  loop: "{{ osd_nodes }}"

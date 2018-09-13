@@ -1,0 +1,9 @@
+- hosts: cluster
+  become: true
+
+  roles:
+     - { role: clean-old-ceph, when: clean_old_ceph }
+     - { role: proxy, when: use_proxy }
+     - apt-update-upgrade
+     - docker      
+     - pip

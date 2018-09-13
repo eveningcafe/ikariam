@@ -1,0 +1,2 @@
+- import_playbook: ceph-conf-prepare.yml
+- import_playbook: ceph-client.yml

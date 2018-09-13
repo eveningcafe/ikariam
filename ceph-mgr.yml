@@ -1,0 +1,11 @@
+---
+- hosts: ceph_mgr
+  sudo: yes
+  roles:
+     - {role: ceph-mgr, when: parallel_create_mgr}
+# neu ko lam parallel thi lam tung host mot
+- hosts: ceph_mgr
+  sudo: yes
+  serial: 1
+  roles:
+     - {role: ceph-mgr, when: not parallel_create_mgr}

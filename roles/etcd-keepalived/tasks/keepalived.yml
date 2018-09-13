@@ -1,0 +1,20 @@
+---
+- name: Install keepalived (debian/ubuntu)
+  apt: name=keepalived state=present
+  allow_unauthenticated: yes
+  when: ansible_os_family == "Debian"
+  tags: keepalived
+  notify: restart keepalived
+  
+- name: Ensures /etc/keepalived/hosts dir exists
+  file: path=/etc/keepalived/hosts state=directory
+
+- name: coppy basic conf 
+  template: src=keepalived/etc/keepalived/keepalived.conf.j2 dest=/etc/keepalived/keepalived.conf
+  
+- name: Config keepalived 
+  template: src=keepalived/etc/keepalived/hosts/keepalived_etcd.conf.j2 dest=/etc/keepalived/hosts/keepalived_etcd.conf
+  notify: restart keepalived
+
+- name: Start keepalived
+  service: name=keepalived state=started

@@ -1,0 +1,73 @@
+#os
+use_proxy: true
+http_proxy: "http://192.168.5.8:3128"
+https_proxy: "http://192.168.5.8:3128"
+no_proxy: "localhost,127.0.0.1,storage01,storage02,storage03,storage04,.191,.192,.193,.194,10.10.100.191,192.168.2.191,192.168.100.191,192.168.200.191,192.168.100.192,192.168.100.193,192.168.100.194,192.168.100.195,192.168.2.192,192.168.2.193,192.168.2.194,192.168.2.195,192.168.200.192,192.168.200.193,192.168.200.194,192.168.200.195"
+
+#etcd-keepalived 
+#"etcd_interface" is interface etcd connect each other
+etcd_interface: ens5
+etcd_run_dir: /usr/local/sbin
+etcd_data_dir: /var/cache/etcd/state
+etcd_user: root
+keepalived_iface_vip: ens5
+keepalived_role: MASTER
+
+#mon
+mon_name: ceph-mon
+mon_ip: 192.168.100.191 
+
+
+#mgr01
+mgr_name: ceph-mgr
+
+#osd
+device_prepare:
+  - name: vdb
+    path: /dev/vdb
+  - name: vdc
+    path: /dev/vdc
+  - name: vdd
+    path: /dev/vdd
+osd_nodes:
+  - name: ceph-osd-vdb
+    primary_disk: /dev/vdb
+  - name: ceph-osd-vdc
+    primary_disk: /dev/vdc
+    wal_disk: /dev/vdd
+    db_disk: /dev/vdd
+#conf
+ceph_conf_file:
+    path: /tmp/ceph.base
+    group: root
+    owner: root
+    mode: 640
+ceph_parameters_file:
+    path: /tmp/ceph.parameters
+    group: root
+    owner: root
+    mode: 640
+rules:
+  - name: hdd-replicate
+    class: hdd
+  - name: ssd-replicate
+    class: ssd
+pools:
+  - name: images
+    pg: 128
+    rule: hdd-replicate
+    application: rbd
+    size: 3
+    min_size: 2
+  - name: volumes
+    pg: 128
+    size: 3
+    min_size: 2
+    rule: hdd-replicate
+    application: rbd
+    
+users:
+  - name: images
+    permission: "mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=images, allow rwx pool=volumes'"
+  - name: volumes
+    permission: "mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=images, allow rwx pool=volumes'"

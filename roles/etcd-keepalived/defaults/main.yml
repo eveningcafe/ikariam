@@ -1,0 +1,24 @@
+# #etcd----------------
+# #group var
+# etcd_version : "v3.2.11"
+# etcd_platform: linux
+# etcd_arch: amd64
+# etcd_download_url: "https://github.com/coreos/etcd/releases/download/v3.2.11/etcd-v3.2.11-linux-amd64.tar.gz"
+# etcd_initial_cluster_state: new
+# etcd_initial_cluster_token: etcd-cluster-1
+#host var 
+# etcd_run_dir: /usr/local/sbin
+# etcd_data_dir: /var/cache/etcd/state
+# etcd_user: root  # The user only applies to use
+# etcd_interface: ens5
+# #keepalived--------------------------------
+# #group var
+# keepalived_auth_pass: "1111"
+# keepalived_router_id: "52"
+# keepalived_virtual_ip: "192.168.100.195"
+# keepalived_active_priority: "100"
+# keepalived_backup_priority: "90"
+# etcd_process_weight: "20"
+# #host var
+# keepalived_iface_vip: "eth0"
+# keepalived_role: "MASTER"

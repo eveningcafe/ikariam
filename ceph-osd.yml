@@ -1,0 +1,13 @@
+---
+- hosts: ceph_osd
+  sudo: yes
+  roles:
+     - {role: ceph-osd, when: parallel_create_osd}
+# neu ko lam parallel thi lam tung host mot
+- hosts: ceph_osd
+  sudo: yes
+  serial: 1
+  roles:
+     - {role: ceph-osd, when: not parallel_create_osd}
+
+

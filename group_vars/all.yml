@@ -1,0 +1,19 @@
+#for docker 
+docker_use_local_registry: false
+docker_insecure_registry_server_ip: 192.168.100.194
+docker_insecure_registry_server_port: 5000
+ceph_docker_image: ceph/daemon
+ceph_docker_image_tag: latest
+#for old ceph , if set true it will wipe out all mon, osd , mgr, file, folder,...
+clean_old_ceph: true
+#for ceph cluster
+ceph_public_network: 192.168.100.0/24
+ceph_cluster_network: 192.168.200.0/24
+##for osd size by byte db=5gb wal=500mb
+wipe_out_disk_before_zap: false
+block_wal_size: 524288000
+block_db_size: 5368709120
+#for etcd-keepalived
+keepalived_virtual_ip: 192.168.100.195
+etcd_client_port: 2379
+etcd_peer_port: 2380

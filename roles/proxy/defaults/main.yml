@@ -1,0 +1,5 @@
+use_proxy: true
+https_proxy: "https://192.168.5.8:3128/"
+http_proxy: "http://192.168.5.8:3128/"
+no_proxy: 127.0.0.1,{{ ansible_default_ipv4.address }}
+

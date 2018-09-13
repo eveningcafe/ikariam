@@ -1,0 +1,5 @@
+#check osd up
+osd_max: 6
+retries_osd: 5
+delay_retries_osd: 30
+parallel_create_osd: false

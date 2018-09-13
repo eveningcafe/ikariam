@@ -1,0 +1,21 @@
+- name: ensure file ceph.conf exists 
+  local_action:
+    module: copy
+    content: ""
+    dest: "{{ ceph_conf_file.path }}"
+    force: yes # rewrite if file exit
+    group: "{{ceph_conf_file.group}}"
+    owner: "{{ceph_conf_file.owner}}"
+    mode: "{{ceph_conf_file.mode}}"
+
+- name: get conf file
+  command: "docker exec {{mon_name}} cat /etc/ceph/ceph.conf"
+  register: ceph_conf
+
+- name: save ceph conf to ansible host
+  local_action:
+    module: lineinfile
+    path: "{{ ceph_conf_file.path }}"
+    line: "\n{{ ceph_conf.stdout }} \n"
+    
+

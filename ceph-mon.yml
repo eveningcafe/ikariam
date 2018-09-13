@@ -1,0 +1,12 @@
+---
+- hosts: ceph_mon
+  sudo: yes
+  roles:
+     - {role: ceph-mon, when: parallel_create_mon}
+# neu ko lam parallel thi lam tung host mot
+- hosts: ceph_mon
+  sudo: yes
+  serial: 1
+  roles:
+     - {role: ceph-mon, when: not parallel_create_mon}
+

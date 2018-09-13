@@ -1,0 +1,14 @@
+# env
+- name: insert shell proxy(http)
+  lineinfile: dest=/etc/environment state=present create=yes owner=root group=root mode=0644 regexp="https_proxy="
+              insertafter=EOF line="export http_proxy={{ http_proxy }}"
+  ignore_errors: yes
+- name: insert shell proxy(https)
+  lineinfile: dest=/etc/environment state=present create=yes owner=root group=root mode=0644 regexp="https_proxy="
+              insertafter=EOF line="export https_proxy={{ https_proxy }}"
+  ignore_errors: yes
+- name: insert shell proxy(no_proxy)
+  lineinfile: dest=/etc/environment state=present create=yes owner=root group=root mode=0644 regexp="no_proxy="
+              insertafter=EOF line="export no_proxy={{ no_proxy }}"
+  ignore_errors: yes
+

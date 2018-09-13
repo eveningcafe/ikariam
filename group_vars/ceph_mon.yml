@@ -1,0 +1,4 @@
+#check mon up
+retries_mon: 5
+delay_retries_mon: 30
+parallel_create_mon: false

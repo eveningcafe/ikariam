@@ -1,0 +1,14 @@
+- name: check all osd is up
+  shell: "timeout 5 docker exec {{mon_name}} ceph -s | grep 'osd:'" 
+  changed_when: false
+  register: check_osd
+  failed_when: false
+  until: check_osd.rc == 0 and osd_max == (check_osd.stdout | regex_search('\\d+')| int)
+  retries: "{{retries_osd}}"
+  delay: "{{delay_retries_osd}}"
+- debug:
+    msg: "osd_max you chose: {{osd_max }} ; osd now: {{check_osd.stdout}}"
+- name: end execution
+  fail:
+    msg: "osd_max: {{osd_max}} is not fully up, manually verify "
+  when: check_osd.stdout is defined and osd_max != (check_osd.stdout | regex_search('\\d+')| int)

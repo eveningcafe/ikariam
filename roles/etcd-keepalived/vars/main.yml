@@ -1,0 +1,19 @@
+# etcd_version etcd_platform etcd_arch in group var
+etcd_release: "etcd-{{ etcd_version }}-{{ etcd_platform }}-{{ etcd_arch }}"
+# "etcd_run_dir" /usr/local/sbin/ in host var
+etcd_cmd: "{{ etcd_run_dir }}/etcd"
+# Networking Variables
+#"etcd_interface" in_hostvar
+etcd_client_interface: "{{ etcd_interface }}"
+etcd_peer_interface: "{{ etcd_interface }}"
+#"etcd_peers_group" as group in inventory
+etcd_peers_group: etcd_keepalived
+etcd_url_scheme: http
+etcd_client_url_scheme: "{{ etcd_url_scheme }}"
+etcd_peer_url_scheme: "{{ etcd_url_scheme }}"
+etcd_initial_cluster_state: new
+etcd_initial_advertise_peer_urls: "{{ etcd_peer_url_scheme }}://{{ hostvars[inventory_hostname]['ansible_' + etcd_peer_interface]['ipv4']['address'] }}:{{ etcd_peer_port }}"
+etcd_listen_peer_urls: "{{ etcd_peer_url_scheme }}://{{ hostvars[inventory_hostname]['ansible_' + etcd_peer_interface]['ipv4']['address'] }}:{{ etcd_peer_port }}"
+etcd_advertise_client_urls: "{{ etcd_client_url_scheme }}://{{ hostvars[inventory_hostname]['ansible_' + etcd_client_interface]['ipv4']['address'] }}:{{ etcd_client_port }}"
+etcd_listen_client_urls: "{{ etcd_client_url_scheme }}://0.0.0.0:{{ etcd_client_port }}"
+

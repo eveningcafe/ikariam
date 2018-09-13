@@ -1,0 +1,43 @@
+- name: populate kv_store with default ceph.conf
+  docker_container:
+    name: populate-kv-store
+    image: "{{image_address}}"
+    command: populate_kvstore
+    network_mode: host
+    env:
+      KV_TYPE: "{{kv_type}}"
+      KV_IP: "{{kv_endpoint}}"
+      KV_PORT: "{{kv_port}}"
+  run_once: true
+  when:
+    - "{{ inventory_hostname == groups['ceph_mon'][0] }}"
+
+- name: put public network key
+  command: "curl 'http://{{kv_endpoint}}:{{kv_port}}/v2/keys/ceph-config/ceph/global/public_network' -XPUT -d value={{ ceph_public_network }}"
+  run_once: true
+  when:
+    - "{{ inventory_hostname == groups['ceph_mon'][0] }}"
+- name: put cluster network key
+  command: "curl 'http://{{kv_endpoint}}:{{kv_port}}/v2/keys/ceph-config/ceph/global/cluster_network' -XPUT -d value={{ ceph_cluster_network }}"
+  run_once: true
+  when:
+    - "{{ inventory_hostname == groups['ceph_mon'][0] }}"
+- name: prepare size wal
+  when: (
+         block_wal_size is defined
+         and (inventory_hostname == groups['ceph_mon'][0])
+        )
+  command: "curl 'http://{{kv_endpoint}}:{{kv_port}}/v2/keys/ceph-config/ceph/osd/bluestore_block_db_size' -XPUT -d value={{ block_wal_size }} "
+  run_once: true
+- name: prepare size block db
+  when: (
+         block_db_size is defined
+         and (inventory_hostname == groups['ceph_mon'][0])
+        )
+  command: "curl 'http://{{kv_endpoint}}:{{kv_port}}/v2/keys/ceph-config/ceph/osd/bluestore_block_wal_size' -XPUT -d value={{ block_db_size }} "
+  run_once: true
+- name: delete populate-kv-store docker
+  docker_container:
+    name: populate-kv-store
+    state: absent
+    image: "{{image_address}}"

@@ -1,0 +1,12 @@
+- name: check has active mgr
+  shell: "timeout 5 docker exec {{mon_name}} ceph -s | grep 'mgr:'" 
+  changed_when: false
+  register: check_mgr
+  failed_when: false
+  until: check_mgr.rc == 0 and not (check_mgr.stdout is search('no daemons active'))
+  retries: "{{retries_mgr}}"
+  delay: "{{delay_retries_mgr}}"
+- name: end execution
+  fail:
+    msg: "mgr is not active, manually verify "
+  when: check_mgr.stdout is defined and (check_mgr.stdout is search('no daemons active'))

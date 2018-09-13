@@ -1,0 +1,16 @@
+- name: verify inventory
+  fail:
+    msg: "number of host in ceph_conf group must be 1 and that host must has monitor-container!"
+  when: (groups['ceph_conf'] | length > 1) or ('ceph_mon' not in group_names)
+- name: verify osd
+  include: verify-osd.yml
+- name: verify mgr
+  include: verify-mgr.yml
+- name: enable dashboard
+  include: enable-dashboard.yml
+- name: create rules, pools, user
+  include: create-replicate-rules-pools-users.yml
+- name: get ceph.conf to ansible node
+  include: get-ceph-conf.yml
+- name: get ceph.parameter to ansible node
+  include: get-ceph-parameters.yml
